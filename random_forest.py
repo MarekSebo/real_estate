@@ -18,7 +18,7 @@ kategoricke_premenne=[x for x in premenne if x not in spojite_premenne]
 
 dm=dm[premenne+y_name]
 
-
+####
 
 #definicie
 def kriteria(predictedY, realY):
