@@ -15,12 +15,7 @@ class DataClass(object):
         self.total_data_size = len(y)
         self.batch_size = batch_size
         self.batch_cursor = 0              # pozicia batchu v ramci datasetu
-        ###!!! hardcoded DOCASNE
-        self.data_size = 30000
-        # END HARDCODED DOCASNE
-
-    # def shuffle(self):
-    #     random.shuffle(self.''''''')
+        self.data_size = np.floor(55523 * 0.9)
 
     def next_batch(self):
         data = self.data[self.batch_cursor:self.batch_cursor + self.batch_size]
@@ -29,10 +24,7 @@ class DataClass(object):
         self.batch_cursor += self.batch_size
         if self.batch_cursor + self.batch_size > self.data_size:
             self.batch_cursor = 0
-            # TODO: zamiesat data
 
-        # ak z nejakeho dovodu nie je dost dat do batchu (napr. malo suborov) tak to sposobi errory
-        # tiez len docasne riesenie
         if len(targets) < self.batch_size:
             self.next_batch()
 
