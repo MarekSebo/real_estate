@@ -1,45 +1,41 @@
 #MOZNO y a X nie su spravne zarovnane (skontroluj ci sedi priradenie X-y
 import pandas as pd
 import numpy as np
+import tensorflow as tf
+import os
+from time import time
+import subprocess
 
-dm=pd.read_csv('dm.csv')
+from loading_RE import DataClass, R2, mRE, sqrtMSE
 
- #SEED
-np.random.seed(232)
+session_log_name = 'shallow_GPS_lo_LR'
+info_freq = 2000
+chckpnt = [10000, 25000, 100000] # checkpoints kde sa uklada model
+train_perc = 0.90
+
+batch_size = 200
+learning_rate = 0.001
+
+# NN
+# skryte neurony
+num_hidden = [800, 600, 500, 400, 300]
+keep_prob = 0.5 # dropout keep prob
+keep_prob_last2 = 1 # prob pre posledne dve vrstvy
 
 
-#vyber premenne ktore treba
-premenne=['Xlok', 'Garsonka','PocetIzieb', 'vlast', 'park_garaz', 'vytah', 'rok', 'podlazie', 'stav',
+# NACITANIE DAT
+dm = pd.read_csv('dm.csv')
+# vyber premenne ktore treba
+premenne = ['Xlok', 'Garsonka','PocetIzieb', 'vlast', 'park_garaz', 'vytah', 'rok', 'podlazie', 'stav',
        'konstr', 'vybav', 'stary_rek', 'wp', 'RozlohaIzby', 'balkon_rozl', 'lodzia_rozl', 'terasa_rozl']
-y_name=['dPSQ']
-spojite_premenne=['RozlohaIzby', 'balkon_rozl', 'lodzia_rozl', 'terasa_rozl']
-kategoricke_premenne=[x for x in premenne if x not in spojite_premenne]
+y_name = ['dPSQ']
+spojite_premenne = ['RozlohaIzby', 'balkon_rozl', 'lodzia_rozl', 'terasa_rozl']
+kategoricke_premenne = [x for x in premenne if x not in spojite_premenne]
 
-dm=dm[premenne+y_name]
-
-
-
-#definicie
-def kriteria(predictedY, realY):
-    print("function 'kriteria': validation criteria on the sets you specified....")
-    if(predictedY.shape!= realY.shape):
-        return "Error in Kriteria function: šejpy nešejpujú!: predictedY_shape: {}, realY_shape: {} ".format(predictedY.shape, realY.shape)
-    n_vzorka=np.shape(realY)[0]
-    print("validation on set size of {} began".format(n_vzorka))
-    residuals=(realY - predictedY) #vektor rezidui
-    RSS = np.sum(residuals ** 2)
-    TSS = np.sum((realY - np.mean(realY)) ** 2)
-    print("sqrtMSE = ", np.sqrt(RSS / n_vzorka) )
-    print("R**2= ", 1 - RSS / TSS)  # prikaz model_moj.score(testX, testY)
-    perc_residuals=residuals/realY
-    print("mRE = ", np.median(abs(perc_residuals)))
-    print("sqrtMSE v percentach = ", np.sqrt(np.sum(perc_residuals**2)/n_vzorka ))
-    print("-------------------------------------------------------------------END")
+dm = dm[premenne+y_name]
 
 
-
-
-#shuffle
+# shuffle
 n_all=len(dm[y_name]) # 55 523
 shuf=np.arange(n_all)
 np.random.shuffle(shuf)
@@ -49,135 +45,254 @@ dm.index=range(len(dm.ix[:,1]))
 
 #typy premennych urci
 dm[ kategoricke_premenne ]=\
-    dm[kategoricke_premenne ].apply(lambda x: x.astype('object')) #category
+    dm[kategoricke_premenne ].apply(lambda x: x.astype('category'))
 dm[ spojite_premenne+y_name]=\
     dm[spojite_premenne+y_name].apply(lambda x: x.astype('float32'))
 print("tieto premenne povazujeme za spojite: ",dm[spojite_premenne+y_name].dtypes )
+#END SPOLOCNY UVOD_NN_RF
 
-
-
-# VYTVORENIE TRAIN TEST VALID DATASETOV
-#test a valid je ocisteny o unikatne hodnoty premennych
-
-#finalny dataframe: potrebujem iba jeden dataset
-X_all=dm[premenne]
+# X, y
+X_all=dm[spojite_premenne].join(pd.get_dummies(dm[kategoricke_premenne], prefix=kategoricke_premenne ))
 y_all=dm[y_name]
+
 print("rozmery poli")
-print(y_all.shape)
-print(X_all.shape)
+print("y_shape: ", y_all.shape)
+print("X_shape: ", X_all.shape)
+n_vars = X_all.shape[1]
+
+n_train = np.floor(len(y_all) * train_perc)
+X_train = np.array(X_all.ix[:n_train,:], dtype = 'float32')
+y_train = np.array(y_all.ix[:n_train,:], dtype = 'float32')
+X_valid = np.array(X_all.ix[n_train:,:], dtype = 'float32')
+y_valid = np.array(y_all.ix[n_train:,:], dtype = 'float32')
+print(type(y_train))
+print("Created train dataset with size {} and target with size {}".format(np.shape(X_train), np.shape(y_train)))
+print("Created corresponding validsets with length {}".format(np.shape(y_valid)))
 
 
-perc_valid=0.2
-
-#predely
-last_train=int(np.floor((1-perc_valid)*n_all)-1)
-
-#premenne ktore sa nenachadzaju v train datasete
-premenne_non_train= [x for x in X_all.columns if (not(( X_all.ix[:last_train,x]!=0).any(axis=0)))]
-
-print(" %d premennych sa nenachadza v train datasete:" % len(premenne_non_train))
-#indexy obsahujuce nenulove hodnoty tychto premennych
-
-#urci vsetky indexy valid_test datasetu kde su nulove hodnoty non_train premennych
-nuly=np.zeros(last_train,dtype=bool).reshape((-1,1))
-ktore=np.array([~(X_all.ix[np.arange(last_train,n_all),premenne_non_train].sum(axis=1)==0) ])
-
-
-#ktore riadky obsahuju unikatne hodnoty premennych
-for col in kategoricke_premenne:
-    unikatne_honoty = set(X_all.ix[:last_train, col])
-    ktore=ktore + np.array([~(X_all.ix[np.arange(last_train,n_all),col].isin(unikatne_honoty) ) ])
-ktore=ktore.reshape((-1,1) )
-
-#boolean vektor, True=vyhodit dany riadok
-ktoree=np.concatenate((nuly, ktore))
-
-kolko_vyhod=X_all[ktoree].shape[0]
-X_all=X_all[ktoree==False]
-y_all=y_all[ktoree==False]
-print(X_all.shape)
-print(X_all.index[:5])
-print(y_all.shape)
-print(y_all.index[:5])
-
-#uprav pocet
-n_all=len(y_all)
-print('kvoli validacii a testovaniu sme vyhodili {} riadkov. zostalo {} riadkov'.format(kolko_vyhod,n_all) )
-print("last_train=",last_train)
-print("n_train", n_all-last_train+1)
-
-#vytvor datasety
-X_train=X_all.ix[:(last_train-1),:]
-X_valid=X_all.ix[last_train:,:]
-
-y_train=y_all[:last_train]
-y_valid=y_all[last_train:]
-
-print("vytvorili sme (okrem ineho) valid dataset s rozmermi {}  ".format(X_valid.shape))
-print("vytvorili sme (okrem ineho) train dataset s rozmermi {}  ".format(X_train.shape))
-print("vytvorili sme (okrem ineho) valid y s rozmermi {}  ".format(y_valid.shape))
-print("vytvorili sme (okrem ineho) train y s rozmermi {}  ".format(y_train.shape))
-print('-------------------------------------------------------------')
 print('mozme modelovat!')
 print('-------------------------------------------------------------')
 
 
 
+# NNET
+graph = tf.Graph()
+layers = ['fc'+str(i+1) for i in range(len(num_hidden))]
+
+with graph.as_default():
+    tf_dataset = tf.placeholder(tf.float32, shape = (None, n_vars))
+    tf_target = tf.placeholder(tf.float32, shape = (None))
 
 
+    def std_init(n_units_prev, n_units):
+        return np.sqrt(6 / (n_vars + num_hidden[0]))
 
-#NEURAL NET
-import tensorflow as tf
-#STLPCE
-cont_cols = [tf.contrib.layers.real_valued_column(k) for k in spojite_premenne] #
-
-#https://www.tensorflow.org/versions/r0.11/api_docs/python/contrib.learn.html#DNNRegressor
-
-
-Xlok_cols = tf.contrib.layers.sparse_column_with_hash_bucket("Xlok", hash_bucket_size=1500)
-# other_cat_cols = [tf.contrib.layers.sparse_column_with_hash_bucket(k, hash_bucket_size=8) for k in list(set(kategoricke_premenne) - set('Xlok') )]
-#other_cat_cols = [tf.contrib.layers.sparse_column_with_keys(k, keys=list(set(X_train[k]))) for k in list(set(kategoricke_premenne) - set('Xlok') )]
-feature_cols = cont_cols+list(Xlok_cols)#+other_cat_cols
-
-
-
-
-
-
-
-#INPUT FN KTORA VRACIA aj target
-def input_fn(df):
-   continuous_cols = {}
-   continuous_cols = {k: tf.constant(df[k].values) for k in spojite_premenne}
-   categorical_cols = {k: tf.SparseTensor(
-      indices = [[i,0] for i in range (df[k].size) ],
-      values = df[k].values,
-      shape = [df[k].size,1])
-            for k in kategoricke_premenne}
-   feature_cols=dict(continuous_cols.items() )
-   feature_cols.update(dict(categorical_cols.items()))
-   target=tf.constant(y_train.values)
-   print("ta spravna input funkcia.")
-   return feature_cols, target
+    weights = {
+        'fc1': tf.Variable(tf.random_uniform([n_vars , num_hidden[0]], minval = - std_init(n_vars, num_hidden[0]), maxval=std_init(n_vars, num_hidden[0]) )),
+        'fc2': tf.Variable(tf.random_uniform([num_hidden[0], num_hidden[1]], minval=- std_init(num_hidden[0], num_hidden[1]),
+                              maxval=std_init(num_hidden[0], num_hidden[1]))),
+        'fc3': tf.Variable(
+            tf.random_uniform([num_hidden[1], num_hidden[2]], minval=- std_init(num_hidden[1], num_hidden[2]),
+                              maxval=std_init(num_hidden[1], num_hidden[2]))),
+        'fc4': tf.Variable(
+            tf.random_uniform([num_hidden[2], num_hidden[3]], minval=- std_init(num_hidden[2], num_hidden[3]),
+                              maxval=std_init(num_hidden[2], num_hidden[3]))),
+        'fc5': tf.Variable(
+            tf.random_uniform([num_hidden[3], num_hidden[4]], minval=- std_init(num_hidden[3], num_hidden[4]),
+                              maxval=std_init(num_hidden[3], num_hidden[4]))),
+        'out': tf.Variable(tf.random_uniform([num_hidden[-1], 1], minval=- std_init(num_hidden[-1], 1),
+                                             maxval=std_init(num_hidden[-1], 1)))
+    }
 
 
+    biases = {
+        'fc1': tf.Variable(tf.zeros([num_hidden[0]])),
+        'fc2': tf.Variable(tf.zeros([num_hidden[1]])),
+        'fc3': tf.Variable(tf.zeros([num_hidden[2]])),
+        'fc4': tf.Variable(tf.zeros([num_hidden[3]])),
+        'fc5': tf.Variable(tf.zeros([num_hidden[4]])),
+        'out': tf.Variable(tf.zeros([1]))
+    }
+    log = []
 
 
+    def model(data):
+        # input size = n_vars
+        log.append('input: ' + str(data.get_shape().as_list()))
+        out = data
+        # FC1
+        out = tf.matmul(out, weights['fc1']) + biases['fc1']
+        out = tf.nn.dropout(out, keep_prob)
+        out = tf.nn.relu(out)
+
+        # FC2
+        out = tf.matmul(out, weights['fc2']) + biases['fc2']
+        out = tf.nn.dropout(out, keep_prob)
+        out = tf.nn.relu(out)
+
+        # FC3
+        out = tf.matmul(out, weights['fc3']) + biases['fc3']
+        out = tf.nn.dropout(out, keep_prob)
+        out = tf.nn.relu(out)
+
+        # FC4
+        out = tf.matmul(out, weights['fc4']) + biases['fc4']
+        out = tf.nn.dropout(out, keep_prob_last2)
+        out = tf.nn.relu(out)
+
+        # FC5
+        out = tf.matmul(out, weights['fc5']) + biases['fc5']
+        out = tf.nn.dropout(out, keep_prob_last2)
+        out = tf.nn.relu(out)
+
+        # output
+        return tf.matmul(out, weights['out']) + biases['out']
+
+    output = model(tf_dataset)
+    loss = tf.reduce_mean(tf.square(output - tf_target)) / batch_size
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-08)
+    train = optimizer.minimize(loss)
+
+    saver = tf.train.Saver()
+    init = tf.initialize_all_variables()
 
 
-def my_input_fn():
-    return input_fn(X_train)
-
-print(my_input_fn())
-print(len(feature_cols))
+train_data = DataClass(X_train, y_train, batch_size, data_use='train')
+valid_data = DataClass(X_valid, y_valid, batch_size, data_use='valid')
 
 
+with tf.Session(graph=graph) as session:
+    step = -1
+
+    # logovanie vysledkov
+    filename_ckpt = "logs/{}.ckpt".format(session_log_name)
+    filename_txt = "logs/{}.txt".format(session_log_name)
+    if os.path.isfile(filename_txt) and os.stat(filename_txt).st_size == 0:
+        os.remove(filename_txt)
+    if os.path.isfile(filename_txt):
+        try:
+            saver.restore(session, filename_ckpt)
+        except:
+            print("You probably have changed the model architecture (or another error occured)."
+                  " Please change the 'session_log_name' variable, tooo.")
+            session_log_name = input("Type new session_log_name:")
+            saver.restore(session, "logs/{}.ckpt".format(session_log_name))
+    else:
+        session.run(init)
+
+    #docasny krok - loading nefunguje
+    step_0 = 0
+    # end docasny krok
+
+    (batch_data_valid, batch_targets_valid) = valid_data.next_batch()
+
+    print('-------------------------------------')
+    print(' <<-----Training started---------->> ')
+    print('-------------------------------------')
+
+    cas = time()
+    chckpnt_count = 0
+    continue_training = True
+    session.run(init)
+
+    while continue_training:
+        step += 1
+
+        # training batch
+        batch_data, batch_targets = train_data.next_batch()
+        feed_dict = {tf_dataset: batch_data, tf_target: batch_targets}
+        _, loss_value, predictions = session.run([train, loss, output], feed_dict=feed_dict)
+
+        if step % info_freq == 0:
+            # train batch
+            print('Minibatch squared loss at step {}: {}'.format(step + step_0, np.sqrt(loss_value)) )
+            print('Minibatch R2: ', R2(predictions, batch_targets))
+            # valid batch
+            valid_prediction = session.run(output, feed_dict={tf_dataset: batch_data_valid})
+            print('Validation (batch-sized) squared loss: {}'.format(np.sqrt(loss_value)) )
+            print('Validation R2: ', R2(valid_prediction, batch_targets_valid))
+            print('-----------------------------------')
+
+        if step in set(chckpnt):
+            chckpnt_time = (time() - cas) / 60
+            print("{} steps took {} minutes.".format(chckpnt[chckpnt_count], chckpnt_time))
+            cas = time()
+            subprocess.call(['spd-say', 'Oh yeah! Go Johnny Go, Go! Step {}. Continuing to the next checkpoint. '.format(step + step_0)])
+
+            print("Validation on set size {} began...".format(np.shape(y_valid)))
+
+            results = []
+            valid_labels = []
+            for offset in range(0, valid_data.total_data_size - batch_size + 1, batch_size):
+                data, lab = valid_data.next_batch()
+                predict = ((session.run(
+                    output,
+                    feed_dict={tf_dataset: data}
+                )))
+                results.append(predict)
+                valid_labels.append(lab)
+
+            print('Validation R2 (full) after {} steps, i.e {} epochs: '.format(step, batch_size * step / len(y_train)  ))
+
+            # transf na 1D array
+            results = np.array(results)
+            valid_labels = np.array(valid_labels)
+
+            results_np = np.zeros(valid_data.total_data_size)
+            valid_labels_np = np.zeros(valid_data.total_data_size)
+            for i in range(len(results)):
+                batch_len = len(results[i])
+                for j in range(batch_len):
+                    results_np[(i * batch_size + j)] = results[i][j]
+                    valid_labels_np[(i * batch_size + j)] = valid_labels[i][j]
+
+            # odstranenie nulovych cien
+            dlzka_pred = len(results_np)
+            results = results_np[valid_labels_np > 0]
+            valid_labels = valid_labels_np[valid_labels_np > 0]
+            print(dlzka_pred - len(results), " tolko sme odstranili nulovych valid hodnot :( ")
+
+            # vyhodnotenie
+            # print
+            print("ukazka head a tail:")
+            print(pd.DataFrame({'predicted': results, 'true': valid_labels}).head(10))
+            print(pd.DataFrame({'predicted': results, 'true': valid_labels}).tail(150))
+            print('Validation accuracy (full) after {} steps: '.format(step + step_0))
+            print("R2: ", R2(results, valid_labels))
+            print("mRE: ", mRE(results, valid_labels))
+            print("sqrtMSE: ", sqrtMSE(results, valid_labels))
+
+            print('batch size: {}'.format(batch_size))
+            print('learning rate: {}'.format(learning_rate))
+            print('dropout keep: {}, last_2: {}'.format(keep_prob, keep_prob_last2))
+            print('-------------------------------------------------')
+            print('\n')
+
+            # log to iste
+            logfile = open('logs/{}.txt'.format(session_log_name), 'a')
+            logfile.write(str(step + step_0) + '\n')
+            logfile.write(str(len(log) + 3) + '\n')
+            logfile.write('\n'.join(log) + '\n\n\n')
+
+            logfile.write("{} steps took {} minutes.".format(chckpnt[chckpnt_count], chckpnt_time))
+            logfile.write('batch size: {}'.format(batch_size) + '\n')
+            logfile.write('learning rate: {}'.format(learning_rate) + '\n')
+            logfile.write('dropout keep: {}, last_2: {}'.format(keep_prob, keep_prob_last2))
+            logfile.write('Validation accuracy (full) after {} steps: '.format(step + step_0) + '\n')
+            logfile.write("R2: {}".format(str(R2(results, valid_labels))) + '\n')
+            logfile.write("mRE: {}".format(str(mRE(results, valid_labels))) + '\n')
+            logfile.write("sqrtMSE: {}".format(str(sqrtMSE(results, valid_labels))) + '\n')
+            logfile.write('------------------------------------' + '\n')
+            logfile.write('------------------------------------' + '\n')
+
+            logfile.close()
+
+            # uloz model
+            save_path = saver.save(session, "logs/{}_chckpnt{}.ckpt".format(session_log_name, chckpnt[chckpnt_count]))
+            chckpnt_count += 1
+
+            if(step == chckpnt[-1]):
+                continue_training = False
 
 
-
-regressor = tf.contrib.learn.DNNRegressor(feature_columns=feature_cols, hidden_units=[10, 10]) #[input_fn(X_train),target]
-regressor.fit(input_fn=my_input_fn, steps=5000)
-
-
-
-
+    print('Finito')
