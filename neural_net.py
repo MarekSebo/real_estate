@@ -1,4 +1,4 @@
-#MOZNO y a X nie su spravne zarovnane (skontroluj ci sedi priradenie X-y
+#MOZNO y a X nie su spravne zarovnane (skontroluj ci sedi priradenie X-y)
 import pandas as pd
 import numpy as np
 import tensorflow as tf
@@ -164,7 +164,9 @@ valid_data = DataClass(X_valid, y_valid, batch_size, data_use='valid')
 with tf.Session(graph=graph) as session:
     step = -1
 
-    # logovanie vysledkov
+    # logging
+    if not os.path.isdir('logs'):
+        os.mkdir('logs')
     filename_ckpt = "logs/{}.ckpt".format(session_log_name)
     filename_txt = "logs/{}.txt".format(session_log_name)
     if os.path.isfile(filename_txt) and os.stat(filename_txt).st_size == 0:
