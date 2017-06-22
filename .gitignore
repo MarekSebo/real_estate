@@ -3,6 +3,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 
+*.xml
 # C extensions
 *.so
 
@@ -95,3 +96,4 @@ ENV/
 
 .gitignore
 .idea/
+logs/
