@@ -1,0 +1,153 @@
+
+[1] "###########  VALIDACIA AKTUALNEHO MODELU##########"
+[1] "na validacnom datasete s tolkoto riadkami: 282"
+[1] "                                                  "
+[1] "                                                  "
+[1] "#####vyhodnotenie modelu: muniSR :na valid datach o pocte: 189"
+[1] "percentualne rezidua v absolutnej hodnote maju toto rozdelenie (median je mRE):"
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+ 0.01072  4.89400  8.50900 11.93000 16.63000 86.14000 
+[1] "perc rezidua bez absolutnej hodnoty maju toto rozdelenie:"
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+-53.090  -6.741   0.707   3.299  11.180  86.140 
+[1] "nasledujuce metriky su na perc reziduach:"
+[1] "sqrtMSE modelu je: 16.6437991114391 :MAE je: 11.9261660955087"
+[1] "##KONIEC vyhodnotenia modelu##                                                      "
+[1] "                                                                                     "
+[1] "#####vyhodnotenie modelu: uliceBA :na valid datach o pocte: 88"
+[1] "percentualne rezidua v absolutnej hodnote maju toto rozdelenie (median je mRE):"
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0717  2.2910  6.8750  8.7000 12.1800 33.2700 
+[1] "perc rezidua bez absolutnej hodnoty maju toto rozdelenie:"
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+-33.27000  -4.35000  -0.08425   1.04900   8.22500  31.72000 
+[1] "nasledujuce metriky su na perc reziduach:"
+[1] "sqrtMSE modelu je: 11.8033558990387 :MAE je: 8.69994426736616"
+[1] "##KONIEC vyhodnotenia modelu##                                                      "
+[1] "                                                                                     "
+[1] "#####vyhodnotenie modelu: spolu :na valid datach o pocte: 277"
+[1] "percentualne rezidua v absolutnej hodnote maju toto rozdelenie (median je mRE):"
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+ 0.01072  3.84600  8.01800 10.90000 14.79000 86.14000 
+[1] "perc rezidua bez absolutnej hodnoty maju toto rozdelenie:"
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+-53.0900  -6.4480   0.5549   2.5840   9.8710  86.1400 
+[1] "nasledujuce metriky su na perc reziduach:"
+[1] "sqrtMSE modelu je: 15.2732185507589 :MAE je: 10.9012291970374"
+[1] "##KONIEC vyhodnotenia modelu##                                                      "
+[1] "                                                                                     "
+[1] "validset s odhadmi a reziduami bol ulozeny do globalnej premennej validset_s_odhadmi"
+[1] "                                                                                    "
+[1] "                                                                                    "
+[1] "                                                                                    "
+[1] "                                                                                    "
+[1] "###########  VALIDACIA AKTUALNEHO MODELU##########"
+[1] "na validacnom datasete s tolkoto riadkami: 282"
+[1] "                                                  "
+[1] "                                                  "
+[1] "#####vyhodnotenie modelu: muniSR :na valid datach o pocte: 189"
+[1] "percentualne rezidua v absolutnej hodnote maju toto rozdelenie (median je mRE):"
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+ 0.01072  4.89400  8.50900 11.93000 16.63000 86.14000 
+[1] "perc rezidua bez absolutnej hodnoty maju toto rozdelenie:"
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+-53.090  -6.741   0.707   3.299  11.180  86.140 
+[1] "nasledujuce metriky su na perc reziduach:"
+[1] "sqrtMSE modelu je: 16.6437991114391 :MAE je: 11.9261660955087"
+[1] "R2 je na absolutnych reziduach:"
+[1] 0.7369899
+[1] "##KONIEC vyhodnotenia modelu##                                                      "
+[1] "                                                                                     "
+[1] "#####vyhodnotenie modelu: uliceBA :na valid datach o pocte: 88"
+[1] "percentualne rezidua v absolutnej hodnote maju toto rozdelenie (median je mRE):"
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0717  2.2910  6.8750  8.7000 12.1800 33.2700 
+[1] "perc rezidua bez absolutnej hodnoty maju toto rozdelenie:"
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+-33.27000  -4.35000  -0.08425   1.04900   8.22500  31.72000 
+[1] "nasledujuce metriky su na perc reziduach:"
+[1] "sqrtMSE modelu je: 11.8033558990387 :MAE je: 8.69994426736616"
+[1] "R2 je na absolutnych reziduach:"
+[1] 0.594038
+[1] "##KONIEC vyhodnotenia modelu##                                                      "
+[1] "                                                                                     "
+[1] "#####vyhodnotenie modelu: spolu :na valid datach o pocte: 277"
+[1] "percentualne rezidua v absolutnej hodnote maju toto rozdelenie (median je mRE):"
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+ 0.01072  3.84600  8.01800 10.90000 14.79000 86.14000 
+[1] "perc rezidua bez absolutnej hodnoty maju toto rozdelenie:"
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+-53.0900  -6.4480   0.5549   2.5840   9.8710  86.1400 
+[1] "nasledujuce metriky su na perc reziduach:"
+[1] "sqrtMSE modelu je: 15.2732185507589 :MAE je: 10.9012291970374"
+[1] "R2 je na absolutnych reziduach:"
+[1] 0.8483323
+[1] "##KONIEC vyhodnotenia modelu##                                                      "
+[1] "                                                                                     "
+[1] "validset s odhadmi a reziduami bol ulozeny do globalnej premennej validset_s_odhadmi"
+[1] "                                                                                    "
+[1] "                                                                                    "
+[1] "                                                                                    "
+[1] "                                                                                    "
+[1] "###########  VALIDACIA AKTUALNEHO MODELU##########"
+[1] "na validacnom datasete s tolkoto riadkami: 282"
+[1] "                                                  "
+[1] "                                                  "
+Called from: gzfile(file, "rb")
+[1] "C:/Users/Lenovo/Disk Google/Machine Learning/DTLN/integracia/3_polygon_a_pricing_API/outputs"
+[1] "C:/Users/Lenovo/Disk Google/Machine Learning/DTLN/integracia/3_polygon_a_pricing_API/outputs"
+[1] "C:/Users/Lenovo/Disk Google/Machine Learning/DTLN/integracia/3_polygon_a_pricing_API/outputs"
+[1] "###########  VALIDACIA AKTUALNEHO MODELU##########"
+[1] "na validacnom datasete s tolkoto riadkami: 282"
+[1] "                                                  "
+[1] "                                                  "
+[1] "#####vyhodnotenie modelu: muniSR :na valid datach o pocte: 189"
+[1] "percentualne rezidua v absolutnej hodnote maju toto rozdelenie (median je mRE):"
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+ 0.01072  4.89400  8.50900 11.93000 16.63000 86.14000 
+[1] "perc rezidua bez absolutnej hodnoty maju toto rozdelenie:"
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+-53.090  -6.741   0.707   3.299  11.180  86.140 
+[1] "nasledujuce metriky su na perc reziduach:"
+[1] "sqrtMSE modelu je: 16.6437991114391 :MAE je: 11.9261660955087"
+[1] "R2 je na absolutnych reziduach:"
+[1] 0.7369899
+[1] "priemerne nadhodnotenie:  3.29903429019086"
+[1] "nad IFP sme zvitazili v tolkoto percentach datasetu:  126.984126984127"
+[1] "##KONIEC vyhodnotenia modelu##                                                      "
+[1] "                                                                                     "
+[1] "#####vyhodnotenie modelu: uliceBA :na valid datach o pocte: 88"
+[1] "percentualne rezidua v absolutnej hodnote maju toto rozdelenie (median je mRE):"
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0717  2.2910  6.8750  8.7000 12.1800 33.2700 
+[1] "perc rezidua bez absolutnej hodnoty maju toto rozdelenie:"
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+-33.27000  -4.35000  -0.08425   1.04900   8.22500  31.72000 
+[1] "nasledujuce metriky su na perc reziduach:"
+[1] "sqrtMSE modelu je: 11.8033558990387 :MAE je: 8.69994426736616"
+[1] "R2 je na absolutnych reziduach:"
+[1] 0.594038
+[1] "priemerne nadhodnotenie:  1.04897795565385"
+[1] "nad IFP sme zvitazili v tolkoto percentach datasetu:  289.772727272727"
+[1] "##KONIEC vyhodnotenia modelu##                                                      "
+[1] "                                                                                     "
+[1] "#####vyhodnotenie modelu: spolu :na valid datach o pocte: 277"
+[1] "percentualne rezidua v absolutnej hodnote maju toto rozdelenie (median je mRE):"
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+ 0.01072  3.84600  8.01800 10.90000 14.79000 86.14000 
+[1] "perc rezidua bez absolutnej hodnoty maju toto rozdelenie:"
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+-53.0900  -6.4480   0.5549   2.5840   9.8710  86.1400 
+[1] "nasledujuce metriky su na perc reziduach:"
+[1] "sqrtMSE modelu je: 15.2732185507589 :MAE je: 10.9012291970374"
+[1] "R2 je na absolutnych reziduach:"
+[1] 0.8483323
+[1] "priemerne nadhodnotenie:  2.58421494925491"
+[1] "nad IFP sme zvitazili v tolkoto percentach datasetu:  70.7581227436823"
+[1] "##KONIEC vyhodnotenia modelu##                                                      "
+[1] "                                                                                     "
+[1] "validset s odhadmi a reziduami bol ulozeny do globalnej premennej validset_s_odhadmi"
+[1] "                                                                                    "
+[1] "                                                                                    "
+[1] "                                                                                    "
+[1] "                                                                                    "

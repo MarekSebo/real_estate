@@ -1,0 +1,32 @@
+#presnost MUNI modelu na training sete
+n= 55523  k= 643   ESS/TSS= 83.8260715495352  sqrt(MSE)= 244.228090966911  MAE= 154.484637994062  
+mRE= 8.70771369363766  MRE= 11.9523090536627  Radj=  84.4664551152657  AIC=  10.9730436026892
+
+TODO
+
+Muni
+- dopln do tabulky koef znamych muni
+- nakresli mapu SR
+- zhladzovanie 
+- doplnanie chybajucich koef
+- predict ako nasobenie vektorov
+
+UliceMaster
+- dopln do tabulky koef znamych ulic
+- nakresli mapu BA
+- zhladzovanie
+- doplnanie chybajucich koef
+
+#MuniMaster
+#- dokopy koeficienty muni mimo BA a uliceBA
+#- predict ako nasobenie vektorov
+
+ked pride muni mimo BA tak munimodel
+inak MasterModel
+
+zhladzovanie(radius, ...)
+celoplosnost(k, vahovaci koef, )
+
+
+
+

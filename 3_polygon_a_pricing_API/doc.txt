@@ -1,0 +1,80 @@
+###Pred prvım spustením
+Na server treba nainštalova EPEL a softvér R. 
+Postup pre Linux - CentOS:
+	sudo yum install -y epel-release
+	sudo yum update -y 
+	sudo yum install -y R
+R sa spúša príkazom:
+	$ R
+
+#Obsah prieèinka , nutnı na správny chod oboch API potrebné (musia sa nachádza v danej directory):
+uliceBAfinal.rds = dáta pre model ulíc pre Bratislavu (Rdata)
+muniSRfinal.rds = dáta pre model miest/municipalít pre celé Slovensko (Rdata)
+init.R = inicializaènı script (spusti pri novom spustení R)
+pricingAPI.R = funkcia na oceòovanie jednej nehnute¾nosti, zadanej do formulára
+polygonAPI.R = funkcia na generovanie podkladu pre cenovú mapu
+
+#Ïalšie súbory, ktoré ale nie sú nutné na správne fungovanie systému:
+doc.gdoc + doc.txt = táto dokumentácia
+test.txt = príklady pouívania oboch API
+backup_environment.Rdata = kópia environmentu, z ktorého mono vygenerova potrebné .rds súbory
+
+
+###Inicializácia (init.R)
+Spusti treba vdy pri spúšaní R na serveri script “init.R”
+Pri spustení vypíše directory, ktorú má nastavenú. Pri migrácii ju bude treba prepísa (premenná “directory” na zaèiatku scriptu. 
+
+#Štruktúra
+Script nainštaluje a otvorí R balíky “mgcv” a “Rserve” a spustí Rserver, prístupnı z Javy. 
+Okrem toho naèíta funkcie, pouívané oboma API:
+transf = transformácia vstupu na formát vhodnı do pricing scriptov
+vyber_model = na základe transformovaného vstupu vyberie model  {"muniSR", "uliceBA"}
+vyber_Xlok = na základe transformovaného vstupu a typu modelu dodá vhodnı vektor lokalít
+indexy_kalkulacka = v pricingAPI vyberie lokality, ktoré sa ocenia
+pricing = pre zadanı model, transoformovanı vstup a indexy vypoèíta èas koeficientov, z ktorıch následne ïalšie funkcie poèítajú cenu 
+
+#Detaily:
+Všetky scripty predpokladajú, e premenné okrem (offerTypeId, streetId, streetNumber) musí pouívate¾ vyplni.
+
+
+###Ocenenie jednej nehnute¾nosti: pricingAPI.R
+Spusti na dopyt zo strany CMN treba script “pricingAPI.R” . Predtım musela prebehnú incializácia (pozri vyššie). 
+Predpis
+pricingAPI(realestateTypeId,offerTypeId, streetId, municipalityId, streetNumber, area,      objectStatusId, buildingApprovalEndYear, realised, hasBalcony, hasTerrace, hasLoggia, hasElevator)
+
+#Vstupom sú tieto tieto parametre (v zátvorke je ich prípustnı formát) :
+realestateTypeId - CMN ID pre typ nehnutelnosti (char alebo int)
+offerTypeId = CMN ID pre typ ponuky (char alebo int)
+streetId - CMN ID ulice (char alebo int)
+municipalityId - CMN ID municipality (char alebo int)
+streetNumber - èíslo ulice (char alebo int)
+area - rozloha v m2 (char alebo int)
+objectStatusId - CMN ID stavu nehnutelnosti (char alebo int)
+buildingApprovalEndYear - CMN ID pre rok kolaudacie (char alebo int)
+realised - CMN ID pre realizovanost (logical alebo {0,1} integer)
+hasBalcony - ma nehnutelnost balkon alebo nie true/false (logical alebo {0,1} integer)
+hasTerrace - ma nehnutelnost terasu alebo nie true/false (logical alebo {0,1} integer)
+hasLoggia - ma nehnutelnost terasu alebo nie true/false (logical alebo {0,1} integer)
+hasElevator - ma nehnutelnost vytah alebo nie true/false (logical alebo {0,1} integer)
+
+#Vıstupom je cena zadaného bytu (numeric, float)
+
+
+####Generovanie podkladu pre cenovú mapu (polygonAPI.R)
+Spusti treba script “polygonAPI.R”. Predtım musela prebehnú incializácia (pozri 1. Inicializácia). 
+Predpis
+polygonAPI(polygon_lat, polygon_long, ktory_model, realestateTypeId,offerTypeId, streetId, municipalityId, streetNumber, area, objectStatusId, buildingApprovalEndYear, realised, hasBalcony, hasTerrace, hasLoggia, hasElevator)
+
+#Vstupom sú tieto tieto parametre (v zátvorke je ich prípustnı formát) :
+Všetky premenné, ktoré sú vstupom do “2. Pricing API”
+polygon_lat = zemepisná šírka vrcholov polygónu
+polygon_long = zemepisná dåka vrcholov polygónu
+Polygón je v otvorenom formáte (t.j. obsahujúce prvı bod iba raz; ak je to k-uholník, vstupom je k dvojíc bodov). 
+ktory_model = typ modelu, z ktorého majú by ceny vytiahnuté {“muniSR”, “uliceBA”}
+
+#Vıstupom je data.frame všetkıch lokalít v zadanom polygóne s premennımi:
+lok = CMN názov danej lokality
+lok_ID = CMN ID danej lokality 
+lat = zemepisná šírka
+long = zemepisná dåka
+cena = cena zadaného bytu v danej entite (lokalite)
